@@ -1,7 +1,7 @@
 // const express = require('express');
 import express from "express";
 import cookieParser from "cookie-parser"
-import dotenv from "dotenv";
+import cors from "cors"
 import authRoutes from "./routes/auth.route.js";
 import messageRoutes from "./routes/message.route.js";
 import Path from "path";
@@ -14,8 +14,8 @@ const app = express();
 const PORT = ENV.PORT || 3000;
 
 app.use(express.json()) //req.body
+app.use(cors({ origin: ENV.CLIENT_URL, credentials: true }))
 app.use(cookieParser());
-
 app.use("/api/auth", authRoutes);
 app.use("/api/messages", messageRoutes);
 
