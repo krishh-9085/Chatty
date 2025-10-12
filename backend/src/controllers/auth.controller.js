@@ -71,8 +71,8 @@ export const login = async (req, res) => {
         return res.status(400).json({ message: "All fields are required" })
     }
     try {
-        const user = await User.findOne({ email })
-        if (!User) return res.status(400).json({ message: "Invalid credentials" })
+    const user = await User.findOne({ email })
+    if (!user) return res.status(400).json({ message: "Invalid credentials" })
         const isPasswordCorrect = await bcrypt.compare(password, user.password)
         if (!isPasswordCorrect) return res.status(400).json({ message: "Invalid credentials" });
 
@@ -105,7 +105,8 @@ export const updateProfile = async (req, res) => {
         const userId = req.user._id;
 
         const uploadResponse = await cloudinary.uploader.upload(profilePic)
-        await User.findByIdAndUpdate(userId,
+        const updateUser = await User.findByIdAndUpdate(
+            userId,
             { profilePic: uploadResponse.secure_url },
             { new: true }
         );
