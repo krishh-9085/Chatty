@@ -8,13 +8,17 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server, {
     cors: {
-        origin: ENV.CLIENT_URL,
+        origin: [ENV.CLIENT_URL],
         credentials: true,
 
-    }
+    },
 })
 //
 io.use(socketAuthMiddleware);
+//we weill use thid fuvntion if user is online or not
+export function getRecieverSocketId(userId){
+    return userSocketMap[userId]
+}
 const userSocketMap = {}; //{userId:socketId}
 
 io.on("connection", (socket) => {
@@ -29,4 +33,4 @@ io.on("connection", (socket) => {
     })
 })
 
-export { io, server ,app};
+export { io, app, server };
