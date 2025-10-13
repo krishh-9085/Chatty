@@ -7,20 +7,25 @@ import MessageInput from './MessageInput';
 import MessagesLoadingSkeleton from './MessagesLoadingSkeleton';
 
 function ChatContainer() {
-  const { selectedUser, messages, getMessagesByUserId ,isMessagesLoading} = useChatStore();
+  const { selectedUser, messages, getMessagesByUserId, isMessagesLoading } = useChatStore();
   const { authUser } = useAuthStore();
+  const messageEndRef = React.useRef(null);
 
   useEffect(() => {
     if (selectedUser?._id) {
       getMessagesByUserId(selectedUser._id);
     }
   }, [selectedUser, getMessagesByUserId]);
-
+  useEffect(() => {
+    if (messageEndRef.current) {
+      messageEndRef.current.scrollIntoView({ behavior: "smooth" });
+    }
+  }, [messages]);
   return (
     <>
       <ChatHeader />
       <div className="flex-1 px-6 overflow-y-auto py-8">
-        {messages && messages.length > 0 && !isMessagesLoading? (
+        {messages && messages.length > 0 && !isMessagesLoading ? (
           <div className="max-w-3xl mx-auto space-y-6">
             {messages.map((msg) => (
               <div
@@ -29,8 +34,8 @@ function ChatContainer() {
               >
                 <div
                   className={`chat-bubble relative ${msg.senderId === authUser._id
-                      ? "bg-cyan-600 text-white"
-                      : "bg-slate-800 text-slate-200"
+                    ? "bg-cyan-600 text-white"
+                    : "bg-slate-800 text-slate-200"
                     }`}
                 >
                   {msg.image && (
@@ -50,7 +55,9 @@ function ChatContainer() {
                 </div>
               </div>
             ))}
+            <div ref={messageEndRef}></div>
           </div>
+
         ) : isMessagesLoading ? <MessagesLoadingSkeleton /> : (
           <NoChatHistoryPlaceholder name={selectedUser?.fullName || "User"} />
         )}
