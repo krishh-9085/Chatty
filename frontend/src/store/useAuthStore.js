@@ -70,6 +70,9 @@ export const useAuthStore = create((set, get) => ({
         try {
             const res = await axiosInstance.put("/auth/update-profile", data);
             set({ authUser: res.data });
+            // Force update local state immediately
+            const useChatStore = (await import('./useChatStore')).useChatStore;
+            useChatStore.getState().handleProfileUpdate(res.data._id, res.data.profilePic);
             toast.success("Profile updated successfully");
         } catch (error) {
             console.log("Error in update profile:", error);

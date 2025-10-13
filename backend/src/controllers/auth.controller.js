@@ -4,7 +4,7 @@ import { generateToken } from "../lib/utils.js";
 import { sendWelcomeEmail } from "../emails/emailHandles.js";
 import { ENV } from "../lib/env.js";
 import cloudinary from "../lib/cloudinary.js";
-
+import { io } from "../lib/socket.js";
 
 export const signup = async (req, res) => {
     const { fullName, email, password } = req.body
@@ -42,13 +42,17 @@ export const signup = async (req, res) => {
             const savedUser = await newUser.save();
             generateToken(savedUser._id, res);
 
-            res.status(201).json({
+            const userResponse = {
                 _id: newUser._id,
                 fullName: newUser.fullName,
                 email: newUser.email,
                 profilePic: newUser.profilePic,
-            });
+            };
 
+            // Emit new user event to all connected clients
+            io.emit("newUser", userResponse);
+
+            res.status(201).json(userResponse);
 
             try {
                 await sendWelcomeEmail(savedUser.email, savedUser.fullName, ENV.CLIENT_URL);
@@ -110,6 +114,12 @@ export const updateProfile = async (req, res) => {
             { profilePic: uploadResponse.secure_url },
             { new: true }
         );
+
+        // Emit socket event for profile update
+        io.emit("profileUpdate", {
+            userId: updateUser._id,
+            profilePic: updateUser.profilePic
+        });
 
         res.status(200).json(updateUser)
 

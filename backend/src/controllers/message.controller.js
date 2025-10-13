@@ -73,24 +73,50 @@ export const sendMessage = async (req, res) => {
 };
 export const getChatPartners = async (req, res) => {
     try {
-        const loggedInUserId = req.user._id
+        const loggedInUserId = req.user._id;
 
-        //find all the messages where the logged in user is either sender or reciever
-        const messages = await Message.find({
-            $or: [
-                { senderId: loggedInUserId },
-                { receiverId: loggedInUserId },
-            ]
-        });
+        // Find all messages and their latest timestamps for each chat partner
+        const latestMessages = await Message.aggregate([
+            {
+                $match: {
+                    $or: [
+                        { senderId: loggedInUserId },
+                        { receiverId: loggedInUserId }
+                    ]
+                }
+            },
+            {
+                $project: {
+                    chatPartnerId: {
+                        $cond: {
+                            if: { $eq: ["$senderId", loggedInUserId] },
+                            then: "$receiverId",
+                            else: "$senderId"
+                        }
+                    },
+                    createdAt: 1
+                }
+            },
+            {
+                $group: {
+                    _id: "$chatPartnerId",
+                    lastMessageAt: { $max: "$createdAt" }
+                }
+            },
+            {
+                $sort: { lastMessageAt: -1 }
+            }
+        ]);
 
-        const chatPartnerIds = [...new Set(messages.map((msg) =>
-            msg.senderId.toString() === loggedInUserId.toString()
-                ? msg.receiverId.toString()
-                : msg.senderId.toString()
-        )
-        ),
-        ];
-        const chatPartners = await User.find({ _id: { $in: chatPartnerIds } }).select("-password")
+        const chatPartnerIds = latestMessages.map(msg => msg._id);
+        
+        // Get user details in the same order as the sorted messages
+        const chatPartners = [];
+        for (const partnerId of chatPartnerIds) {
+            const partner = await User.findById(partnerId).select("-password");
+            if (partner) chatPartners.push(partner);
+        }
+
         res.status(200).json(chatPartners)
     } catch (error) {
         console.log("Error in getMessagesByUserId:", error.message);

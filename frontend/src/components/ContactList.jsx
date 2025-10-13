@@ -4,12 +4,24 @@ import UsersLoadingSkeleton from "./UsersLoadingSkeleton";
 import { useAuthStore } from "../store/useAuthStore";
 
 function ContactList() {
-  const { getAllContacts, allContacts, setSelectedUser, isUsersLoading } = useChatStore();
+  const { 
+    getAllContacts, 
+    allContacts, 
+    setSelectedUser, 
+    isUsersLoading,
+    subscribeToNewUsers,
+    unsubscribeFromNewUsers
+  } = useChatStore();
   const { onlineUsers } = useAuthStore();
 
   useEffect(() => {
     getAllContacts();
-  }, [getAllContacts]);
+    subscribeToNewUsers();
+
+    return () => {
+      unsubscribeFromNewUsers();
+    };
+  }, [getAllContacts, subscribeToNewUsers, unsubscribeFromNewUsers]);
 
   if (isUsersLoading) return <UsersLoadingSkeleton />;
 

@@ -19,13 +19,10 @@ function ChatContainer() {
   const messageEndRef = React.useRef(null);
 
   useEffect(() => {
-
-    getMessagesByUserId(selectedUser._id);
-    subscribeToMessages();
-
-    //clean up
-    return () => unsubscribeFromMessages();
-  }, [selectedUser, getMessagesByUserId, subscribeToMessages, unsubscribeFromMessages]);
+    if (selectedUser?._id) {
+      getMessagesByUserId(selectedUser._id);
+    }
+  }, [selectedUser, getMessagesByUserId]);
 
   useEffect(() => {
     if (messageEndRef.current) {
@@ -53,11 +50,11 @@ function ChatContainer() {
                     <img
                       src={msg.image}
                       alt="Shared"
-                      className="rounded-lg h-48 object-cover"
+                      className="rounded-lg max-h-32 sm:max-h-48 w-auto object-cover"
                     />
                   )}
-                  {msg.text && <p className="mt-2">{msg.text}</p>}
-                  <p className="text-xs mt-1 opacity-75 flex items-center gap-1">
+                  {msg.text && <p className="mt-2 text-sm sm:text-base break-words">{msg.text}</p>}
+                  <p className="text-[10px] sm:text-xs mt-1 opacity-75 flex items-center gap-1">
                     {new Date(msg.createdAt).toLocaleTimeString(undefined, {
                       hour: "2-digit",
                       minute: "2-digit",

@@ -5,7 +5,7 @@ import NoChatsFound from "./NoChatsFound";
 import { useAuthStore } from "../store/useAuthStore";
 
 function ChatsList() {
-  const { getMyChatPartners, chats, isUsersLoading, setSelectedUser } = useChatStore();
+  const { getMyChatPartners, chats, isUsersLoading, setSelectedUser, unreadMessages } = useChatStore();
   const { onlineUsers } = useAuthStore();
 
   useEffect(() => {
@@ -23,13 +23,20 @@ function ChatsList() {
           className="bg-cyan-500/10 p-4 rounded-lg cursor-pointer hover:bg-cyan-500/20 transition-colors"
           onClick={() => setSelectedUser(chat)}
         >
-          <div className="flex items-center gap-3">
-            <div className={`avatar ${onlineUsers.includes(chat._id) ? "online" : "offline"}`}>
-              <div className="size-12 rounded-full">
-                <img src={chat.profilePic || "/avatar.png"} alt={chat.fullName} />
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <div className={`avatar ${onlineUsers.includes(chat._id) ? "online" : "offline"}`}>
+                <div className="size-12 rounded-full">
+                  <img src={chat.profilePic || "/avatar.png"} alt={chat.fullName} />
+                </div>
               </div>
+              <h4 className="text-slate-200 font-medium truncate">{chat.fullName}</h4>
             </div>
-            <h4 className="text-slate-200 font-medium truncate">{chat.fullName}</h4>
+            {unreadMessages[chat._id] > 0 && (
+              <span className="px-2.5 py-1 text-xs font-medium bg-cyan-500 text-white rounded-full">
+                {unreadMessages[chat._id]}
+              </span>
+            )}
           </div>
         </div>
       ))}
