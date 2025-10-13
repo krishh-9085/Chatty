@@ -80,11 +80,42 @@ export const useChatStore = create((set, get) => ({
         set({ messages: [...messages, optimisticMessage] });
         try {
             const res = await axiosInstance.post(`/messages/send/${selectedUser._id}`, messageData);
-            set({ messages: messages.concat(res.data) });
+            const serverMessage = res.data;
+            // replace optimistic message with server message
+            const updatedMessages = get().messages.map((m) => (m._id === tempId ? serverMessage : m));
+            set({ messages: updatedMessages });
         } catch (error) {
-            // remove optimistic message on failure
-            set({ messages: messages });
-            toast.error(error.response?.data?.message || "Something went wrong");
+            // revert to messages without the optimistic one
+            const reverted = get().messages.filter((m) => m._id !== tempId);
+            set({ messages: reverted });
+            const msg = error?.response?.data?.message || error?.message || "Something went wrong";
+            toast.error(msg);
         }
+    },
+    subscribeToMessages: () => {
+        const { selectedUser, isSoundEnabled } = get();
+        if (!selectedUser) return;
+
+        const socket = useAuthStore.getState().socket;
+
+        socket.on("newMessage", (newMessage) => {
+            const isMessageSentFromSelectedUser = newMessage.senderId === selectedUser._id;
+            if (!isMessageSentFromSelectedUser) return;
+
+            const currentMessages = get().messages;
+            set({ messages: [...currentMessages, newMessage] });
+
+            if (isSoundEnabled) {
+                const notificationSound = new Audio("/sounds/notification.mp3");
+
+                notificationSound.currentTime = 0; // reset to start
+                notificationSound.play().catch((e) => console.log("Audio play failed:", e));
+            }
+        });
+    },
+
+    unsubscribeFromMessages: () => {
+        const socket = useAuthStore.getState().socket;
+        socket.off("newMessage");
     },
 }))
