@@ -59,6 +59,12 @@ export const useAuthStore = create((set, get) => ({
         try {
             await axiosInstance.post("/auth/logout");
             set({ authUser: null });
+            // Clear chat store state
+            const { setSelectedUser, clearMessages, clearChats, clearUnreadMessages } = (await import('./useChatStore')).useChatStore.getState();
+            setSelectedUser(null);
+            clearMessages();
+            clearChats();
+            clearUnreadMessages();
             toast.success("Logged out successfully");
             get().disconnectSocket();
         } catch (error) {

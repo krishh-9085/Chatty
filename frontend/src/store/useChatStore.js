@@ -129,9 +129,15 @@ export const useChatStore = create((set, get) => ({
             toast.error(error.response.data.message);
         } finally {
             set({ isUsersLoading: false });
-
         }
-
+    },
+    clearMessages: () => set({ messages: [] }),
+    clearChats: () => set({ chats: [] }),
+    clearUnreadMessages: () => {
+        if (typeof window !== "undefined") {
+            window.localStorage.removeItem("unreadMessages");
+        }
+        set({ unreadMessages: {} });
     },
     getMessagesByUserId: async (userId) => {
         set({ isMessagesLoading: true });
