@@ -118,7 +118,7 @@ function ProfileHeader() {
           value={searchValue}
           onChange={e => setSearchValue(e.target.value)}
           placeholder="Search users..."
-          className="w-full pl-4 pr-10 py-2 rounded-xl bg-slate-700 text-slate-200 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-cyan-500 shadow-md border border-slate-600 transition"
+          className="w-full pl-4 pr-10 py-2 rounded-2xl bg-slate-700 text-slate-200 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-cyan-500 shadow-md border border-slate-600 transition"
           style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.08)' }}
         />
         {searchValue && (

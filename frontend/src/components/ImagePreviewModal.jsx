@@ -24,7 +24,7 @@ export default function ImagePreviewModal({ imageUrl, onClose }) {
       onClick={onClose}
     >
       <div
-        className="relative bg-slate-800/50 rounded-lg shadow-2xl p-4 m-5 max-w-4xl w-full max-h-[90vh] flex flex-col items-center border border-slate-700/50"
+        className="relative bg-slate-800/50 rounded-2xl shadow-2xl p-4 m-5 max-w-4xl w-full max-h-[90vh] flex flex-col items-center border border-slate-700/50"
         onClick={handleModalContentClick}
       >
         <div className="absolute top-6 right-6 flex gap-2">
@@ -43,7 +43,7 @@ export default function ImagePreviewModal({ imageUrl, onClose }) {
             <XIcon className="w-5 h-5" />
           </button>
         </div>
-        <img src={imageUrl} alt="Preview" className="max-w-full max-h-[80vh] object-contain rounded-md" />
+        <img src={imageUrl} alt="Preview" className="max-w-full max-h-[80vh] object-contain rounded-2xl" />
       </div>
     </div>
   );

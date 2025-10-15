@@ -57,7 +57,7 @@ function MessageInput() {
                         <img
                             src={imagePreview}
                             alt="Preview"
-                            className="w-16 h-16 sm:w-20 sm:h-20 object-cover rounded-lg border border-slate-700"
+                            className="w-16 h-16 sm:w-20 sm:h-20 object-cover rounded-2xl border border-slate-700"
                         />
                         <button
                             onClick={removeImage}
@@ -69,12 +69,12 @@ function MessageInput() {
                     </div>
                 </div>
             )}
-            <form onSubmit={handleSendMessage} className="max-w-3xl mx-auto flex space-x-2 sm:space-x-4">
+            <form onSubmit={handleSendMessage} className="max-w-6xl mx-auto flex space-x-2 sm:space-x-4">
                 <input
                     type="text"
                     value={text}
                     onChange={(e) => setText(e.target.value)}
-                    className="flex-1 bg-slate-800/50 border border-slate-700/50 rounded-lg py-2 px-2 sm:px-4 text-sm sm:text-base"
+                    className="flex-1 bg-slate-800/50 border border-slate-700/50 rounded-2xl py-2 px-2 sm:px-4 text-sm sm:text-base"
                     placeholder="Type your message..."
                 />
 
@@ -89,7 +89,7 @@ function MessageInput() {
                 <button
                     type="button"
                     onClick={() => fileInputRef.current?.click()}
-                    className={`bg-slate-800/50 text-slate-400 hover:text-slate-200 rounded-lg px-2 sm:px-4 transition-colors ${imagePreview ? "text-cyan-500" : ""
+                    className={`bg-slate-800/50 text-slate-400 hover:text-slate-200 rounded-2xl px-2 sm:px-4 transition-colors ${imagePreview ? "text-cyan-500" : ""
                         }`}
                 >
                     <ImageIcon className="w-4 h-4 sm:w-5 sm:h-5" />
@@ -97,7 +97,7 @@ function MessageInput() {
                 <button
                     type="submit"
                     disabled={!text.trim() && !imagePreview}
-                    className="bg-gradient-to-r from-cyan-500 to-cyan-600 text-white rounded-lg px-3 sm:px-4 py-2 font-medium hover:from-cyan-600 hover:to-cyan-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="bg-gradient-to-r from-cyan-500 to-cyan-600 text-white rounded-2xl px-3 sm:px-4 py-2 font-medium hover:from-cyan-600 hover:to-cyan-700 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                     <SendIcon className="w-4 h-4 sm:w-5 sm:h-5" />
                 </button>

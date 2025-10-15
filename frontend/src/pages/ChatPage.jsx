@@ -1,6 +1,5 @@
 import React, { useEffect } from 'react'
 import { useChatStore } from '../store/useChatStore';
-import BorderAnimatedContainer from '../components/BorderAnimatedContainer';
 import ActiveTabSwitch from '../components/ActiveTabSwitch';
 import ProfileHeader from '../components/ProfileHeader';
 import ChatsList from '../components/ChatsList';
@@ -26,12 +25,10 @@ function ChatPage() {
     return () => clearInterval(interval);
   }, []);
   return (
-    <div className="relative w-full max-w-6xl min-h-[650px] h-[calc(100vh-2rem)] mx-auto p-2 md:p-6">
-      <BorderAnimatedContainer>
-        <div className="flex w-full h-full rounded-2xl shadow-2xl overflow-hidden border border-slate-700/60" style={{background: 'linear-gradient(135deg, #1e293b 0%, #334155 100%)'}}>
+    <div className="relative w-full h-screen">
+        <div className="flex w-full h-full shadow-2xl overflow-hidden border-0" style={{background: 'linear-gradient(135deg, #1e293b 0%, #334155 100%)'}}>
           {/* LEFT SIDE - Hide on mobile when chat is open */}
-          <div className={`md:w-80 w-full bg-slate-800/60 backdrop-blur-sm flex flex-col transition-all duration-300 ${selectedUser ? 'hidden md:flex' : 'flex'} border-r border-slate-700/40`}
-            style={{ minHeight: '650px' }}>
+          <div className={`md:w-80 w-full bg-slate-800/60 backdrop-blur-sm flex flex-col transition-all duration-300 ${selectedUser ? 'hidden md:flex' : 'flex'} border-r border-slate-700/40`}>
             <ProfileHeader />
             <ActiveTabSwitch />
             <div className="flex-1 overflow-y-auto p-4 space-y-2 custom-scrollbar">
@@ -40,8 +37,7 @@ function ChatPage() {
           </div>
 
           {/* RIGHT SIDE - Full width on mobile when chat is open */}
-          <div className={`flex-1 flex flex-col bg-gradient-to-br from-slate-900/80 to-slate-800/60 backdrop-blur-sm transition-all duration-300 ${selectedUser ? 'flex' : 'hidden md:flex'}`}
-            style={{ minHeight: '650px' }}>
+          <div className={`flex-1 flex flex-col bg-gradient-to-br from-slate-900/80 to-slate-800/60 backdrop-blur-sm transition-all duration-300 ${selectedUser ? 'flex' : 'hidden md:flex'}`}>
             {selectedUser ? (
               <ChatContainer />
             ) : (
@@ -49,7 +45,6 @@ function ChatPage() {
             )}
           </div>
         </div>
-      </BorderAnimatedContainer>
       {/* Custom scrollbar styles */}
       <style>{`
         .custom-scrollbar::-webkit-scrollbar {
@@ -57,7 +52,7 @@ function ChatPage() {
         }
         .custom-scrollbar::-webkit-scrollbar-thumb {
           background: #334155;
-          border-radius: 4px;
+          border-radius: 12px;
         }
         .custom-scrollbar::-webkit-scrollbar-track {
           background: transparent;
