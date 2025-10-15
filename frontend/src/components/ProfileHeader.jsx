@@ -3,6 +3,7 @@ import { LogOutIcon, VolumeOffIcon, Volume2Icon } from "lucide-react";
 import { useAuthStore } from "../store/useAuthStore";
 import { useChatStore } from "../store/useChatStore";
 
+import ConfirmationModal from "./ConfirmationModal";
 const mouseClickSound = new Audio("/sounds/mouse-click.mp3");
 
 function ProfileHeader() {
@@ -10,6 +11,7 @@ function ProfileHeader() {
   const { isSoundEnabled, toggleSound } = useChatStore();
   const [selectedImg, setSelectedImg] = useState(null);
 
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const fileInputRef = useRef(null);
 
   const handleImageUpload = (e) => {
@@ -28,10 +30,23 @@ function ProfileHeader() {
     };
   };
 
+  const handleLogout = () => {
+    setIsModalOpen(true);
+  };
+
+  const confirmLogout = () => {
+    logout();
+    setIsModalOpen(false);
+  };
+  const [searchValue, setSearchValue] = useState("");
+  // Expose searchValue for parent via prop
+  if (typeof window !== "undefined") {
+    window.__chatty_searchValue = searchValue;
+  }
   return (
     <div className="p-3 sm:p-6 border-b border-slate-700/50">
       <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2 sm:gap-3">
+        <div className="flex items-center gap-2 sm:gap-3 flex-shrink min-w-0">
           {/* AVATAR */}
           <div className="avatar online">
             <button
@@ -59,11 +74,11 @@ function ProfileHeader() {
 
           {/* USERNAME & ONLINE TEXT */}
           <div>
-            <h3 className="text-slate-200 font-medium text-sm sm:text-base max-w-[120px] sm:max-w-[180px] truncate">
+            <h3 className="text-slate-200 font-medium text-sm sm:text-base truncate">
               {authUser.fullName}
             </h3>
 
-            <p className="text-slate-400 text-[10px] sm:text-xs">Online</p>
+              <p className="text-green-500 text-[10px] sm:text-xs">Online</p>
           </div>
         </div>
 
@@ -72,7 +87,7 @@ function ProfileHeader() {
           {/* LOGOUT BTN */}
           <button
             className="text-slate-400 hover:text-slate-200 transition-colors"
-            onClick={logout}
+            onClick={handleLogout}
           >
             <LogOutIcon className="size-4 sm:size-5" />
           </button>
@@ -95,6 +110,38 @@ function ProfileHeader() {
           </button>
         </div>
       </div>
+
+      {/* Search input at the bottom of the header with clear button and improved UI */}
+      <div className="mt-4 relative">
+        <input
+          type="text"
+          value={searchValue}
+          onChange={e => setSearchValue(e.target.value)}
+          placeholder="Search users..."
+          className="w-full pl-4 pr-10 py-2 rounded-xl bg-slate-700 text-slate-200 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-cyan-500 shadow-md border border-slate-600 transition"
+          style={{ boxShadow: '0 2px 8px rgba(0,0,0,0.08)' }}
+        />
+        {searchValue && (
+          <button
+            type="button"
+            onClick={() => setSearchValue("")}
+            className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-200 focus:outline-none"
+            aria-label="Clear search"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+          </button>
+        )}
+      </div>
+
+      <ConfirmationModal
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        onConfirm={confirmLogout}
+        title="Log Out"
+        message="Are you sure you want to log out?"
+        confirmButtonText="Log Out"
+        confirmButtonClass="bg-red-600 hover:bg-red-700"
+      />
     </div>
   );
 }

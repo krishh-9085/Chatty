@@ -241,9 +241,17 @@ export const useChatStore = create((set, get) => ({
                     updatedChats.unshift(sender);
                     set({ chats: updatedChats });
                 } else if (newMessage.senderId !== authUser._id) {
-                    // If sender not in chats, refresh the list
-                    const { getMyChatPartners } = get();
-                    getMyChatPartners();
+                    // If sender not in chats, add them to the list
+                    const { allContacts, getMyChatPartners } = get();
+                    const newSender = allContacts.find(c => c._id === newMessage.senderId);
+                    
+                    if (newSender) {
+                        // Add to beginning of chats list
+                        set({ chats: [newSender, ...chats] });
+                    } else {
+                        // Refresh the entire list if sender not found in contacts
+                        getMyChatPartners();
+                    }
                 }
             } else if (newMessage.senderId !== authUser._id) {
                 // If no chats yet, refresh the list

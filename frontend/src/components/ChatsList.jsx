@@ -4,7 +4,7 @@ import UsersLoadingSkeleton from "./UsersLoadingSkeleton";
 import NoChatsFound from "./NoChatsFound";
 import { useAuthStore } from "../store/useAuthStore";
 
-function ChatsList() {
+function ChatsList({ searchValue = "" }) {
   const { getMyChatPartners, chats, isUsersLoading, setSelectedUser, unreadMessages } = useChatStore();
   const { onlineUsers } = useAuthStore();
 
@@ -13,11 +13,13 @@ function ChatsList() {
   }, [getMyChatPartners]);
 
   if (isUsersLoading) return <UsersLoadingSkeleton />;
-  if (chats.length === 0) return <NoChatsFound />;
-
+  const filteredChats = chats.filter(chat =>
+    chat.fullName.toLowerCase().includes(searchValue.toLowerCase())
+  );
+  if (filteredChats.length === 0) return <div className="text-slate-400 text-center py-4">No users found.</div>;
   return (
     <>
-      {chats.map((chat) => (
+      {filteredChats.map((chat) => (
         <div
           key={chat._id}
           className="bg-cyan-500/10 p-4 rounded-lg cursor-pointer hover:bg-cyan-500/20 transition-colors"

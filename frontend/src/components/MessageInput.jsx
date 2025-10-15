@@ -1,22 +1,18 @@
 import React, { useRef, useState } from "react";
-import useKeyboardSound from "../hooks/useKeyboardSound";
 import { useChatStore } from "../store/useChatStore";
 import toast from "react-hot-toast";
 import { ImageIcon, SendIcon, XIcon } from "lucide-react";
 
 function MessageInput() {
-    const { playRandomKeyStrokeSound } = useKeyboardSound();
     const [text, setText] = useState("");
     const [imagePreview, setImagePreview] = useState(null);
     const fileInputRef = useRef(null);
 
-    const { sendMessage, isSoundEnabled } = useChatStore();
+    const { sendMessage } = useChatStore();
 
     const handleSendMessage = (e) => {
         e.preventDefault();
         if (!text.trim() && !imagePreview) return;
-
-        if (isSoundEnabled) playRandomKeyStrokeSound();
 
         sendMessage({
             text: text.trim(), // fixed missing parentheses
@@ -28,12 +24,18 @@ function MessageInput() {
         if (fileInputRef.current) fileInputRef.current.value = "";
     };
 
+    const MAX_IMAGE_SIZE = 10 * 1024 * 1024; // 10MB
     const handleImageChange = (e) => {
         const file = e.target.files[0];
         if (!file) return;
 
         if (!file.type.startsWith("image/")) {
             toast.error("Please select an image file");
+            return;
+        }
+
+        if (file.size > MAX_IMAGE_SIZE) {
+            toast.error("Image size should not exceed 10 MB");
             return;
         }
 
@@ -71,10 +73,7 @@ function MessageInput() {
                 <input
                     type="text"
                     value={text}
-                    onChange={(e) => {
-                        setText(e.target.value);
-                        isSoundEnabled && playRandomKeyStrokeSound();
-                    }}
+                    onChange={(e) => setText(e.target.value)}
                     className="flex-1 bg-slate-800/50 border border-slate-700/50 rounded-lg py-2 px-2 sm:px-4 text-sm sm:text-base"
                     placeholder="Type your message..."
                 />

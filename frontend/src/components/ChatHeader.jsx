@@ -33,7 +33,7 @@ function ChatHeader() {
 
         <div>
           <h3 className="text-slate-200 font-medium text-sm sm:text-base">{selectedUser.fullName}</h3>
-          <p className="text-slate-400 text-xs sm:text-sm">{isOnline ? "Online" : "Offline"}</p>
+          <p className={`text-xs sm:text-sm ${isOnline ? "text-green-500" : "text-slate-400"}`}>{isOnline ? "Online" : "Offline"}</p>
         </div>
       </div>
 

@@ -1,13 +1,14 @@
-import React, { useEffect ,useRef} from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useChatStore } from "../store/useChatStore";
 import { useAuthStore } from '../store/useAuthStore';
 import ChatHeader from './ChatHeader';
 import NoChatHistoryPlaceholder from "./NoChatHistotyPlaceholder"
 import MessageInput from './MessageInput';
 import MessagesLoadingSkeleton from './MessagesLoadingSkeleton';
+import ImagePreviewModal from './ImagePreviewModal';
 
 function ChatContainer() {
-  const { 
+  const {
     selectedUser,
     messages,
     getMessagesByUserId,
@@ -17,6 +18,7 @@ function ChatContainer() {
   } = useChatStore();
   const { authUser } = useAuthStore();
   const messageEndRef = React.useRef(null);
+  const [previewImage, setPreviewImage] = useState(null);
 
   useEffect(() => {
     if (selectedUser?._id) {
@@ -50,7 +52,8 @@ function ChatContainer() {
                     <img
                       src={msg.image}
                       alt="Shared"
-                      className="rounded-lg max-h-32 sm:max-h-48 w-auto object-cover"
+                      className="rounded-lg max-h-32 sm:max-h-48 w-auto object-cover cursor-pointer hover:opacity-90 transition-opacity"
+                      onClick={() => setPreviewImage(msg.image)}
                     />
                   )}
                   {msg.text && <p className="mt-2 text-sm sm:text-base break-words">{msg.text}</p>}
@@ -66,13 +69,17 @@ function ChatContainer() {
             <div ref={messageEndRef}></div>
           </div>
 
-        ) : isMessagesLoading ? 
-        <MessagesLoadingSkeleton /> 
-        : (
-          <NoChatHistoryPlaceholder name={selectedUser?.fullName } />
-        )}
+        ) : isMessagesLoading ?
+          <MessagesLoadingSkeleton />
+          : (
+            <NoChatHistoryPlaceholder name={selectedUser?.fullName} />
+          )}
       </div>
       <MessageInput />
+      <ImagePreviewModal 
+        imageUrl={previewImage} 
+        onClose={() => setPreviewImage(null)} 
+      />
     </>
   );
 }
