@@ -1,35 +1,41 @@
-// const express = require('express');
 import express from "express";
-import cookieParser from "cookie-parser"
-import cors from "cors"
+import cookieParser from "cookie-parser";
+import cors from "cors";
 import authRoutes from "./routes/auth.route.js";
 import messageRoutes from "./routes/message.route.js";
-import Path from "path";
 import { connectDB } from "./lib/db.js";
 import { ENV } from "./lib/env.js";
-import {app,server} from "./lib/socket.js"
+import { app, server } from "./lib/socket.js";
 
+// 🔥 IMPORTANT: Use Render's injected PORT
+const PORT = process.env.PORT;
 
-const __dirname = Path.resolve();
+if (!PORT) {
+    throw new Error("PORT is not defined");
+}
 
-const PORT = ENV.PORT || 3000;
-
-app.use(express.json({limit:"5mb"})) //req.body
-app.use(cors({ origin: ENV.CLIENT_URL, credentials: true }))
+// Middlewares
+app.use(express.json({ limit: "5mb" }));
+app.use(
+    cors({
+        origin: ENV.CLIENT_URL,
+        credentials: true,
+    })
+);
 app.use(cookieParser());
 
+// Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/messages", messageRoutes);
 
-// //make ready for deployment
-// if (ENV.NODE_ENV === "production") {
-//     app.use(express.static(Path.join(__dirname, "../frontend/dist")));
-//     app.get("*", (_, res) => {
-//         res.sendFile(Path.join(__dirname, "../frontend", "dist", "index.html"));
-//     });
-// }
-
-// server.listen(PORT, () => {
-//     console.log("Server is running on port: " + PORT)
-//     connectDB()
-// });
+// ✅ Connect DB first, then start server
+connectDB()
+    .then(() => {
+        server.listen(PORT, () => {
+            console.log(`Server is running on port: ${PORT}`);
+        });
+    })
+    .catch((err) => {
+        console.error("Failed to start server:", err);
+        process.exit(1);
+    });
