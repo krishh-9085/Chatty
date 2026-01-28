@@ -7,11 +7,25 @@ import { connectDB } from "./lib/db.js";
 import { ENV } from "./lib/env.js";
 import { app, server } from "./lib/socket.js";
 
-// 🔥 Render provides this
 const PORT = process.env.PORT;
 if (!PORT) throw new Error("PORT is not defined");
 
-// ✅ CORS MUST BE FIRST
+// ✅ PRE-FLIGHT FIRST (CRITICAL)
+app.options("*", (req, res) => {
+    res.setHeader("Access-Control-Allow-Origin", ENV.CLIENT_URL);
+    res.setHeader("Access-Control-Allow-Credentials", "true");
+    res.setHeader(
+        "Access-Control-Allow-Headers",
+        "Content-Type, Authorization"
+    );
+    res.setHeader(
+        "Access-Control-Allow-Methods",
+        "GET,POST,PUT,DELETE,OPTIONS"
+    );
+    return res.sendStatus(204);
+});
+
+// ✅ CORS SECOND
 app.use(
     cors({
         origin: ENV.CLIENT_URL,
@@ -19,7 +33,7 @@ app.use(
     })
 );
 
-// Then other middleware
+// Other middleware
 app.use(express.json({ limit: "5mb" }));
 app.use(cookieParser());
 
@@ -28,13 +42,8 @@ app.use("/api/auth", authRoutes);
 app.use("/api/messages", messageRoutes);
 
 // Start server
-connectDB()
-    .then(() => {
-        server.listen(PORT, () => {
-            console.log(`Server is running on port: ${PORT}`);
-        });
-    })
-    .catch((err) => {
-        console.error("Failed to start server:", err);
-        process.exit(1);
+connectDB().then(() => {
+    server.listen(PORT, () => {
+        console.log(`Server running on port ${PORT}`);
     });
+});
