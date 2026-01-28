@@ -6,31 +6,37 @@ import { socketAuthMiddleware } from "../middleware/socket.auth.middleware.js";
 
 const app = express();
 const server = http.createServer(app);
+
 const io = new Server(server, {
     cors: {
-        origin: [ENV.CLIENT_URL],
+        origin: ENV.CLIENT_URL, // MUST be exact frontend URL
         credentials: true,
-
     },
-})
-//
+});
+
+// Socket auth
 io.use(socketAuthMiddleware);
-//we weill use thid fuvntion if user is online or not
-export function getRecieverSocketId(userId){
-    return userSocketMap[userId]
+
+// Online users map
+const userSocketMap = {}; // { userId: socketId }
+
+export function getRecieverSocketId(userId) {
+    return userSocketMap[userId];
 }
-const userSocketMap = {}; //{userId:socketId}
 
 io.on("connection", (socket) => {
-    console.log("A user connected", socket.user.fullName)
+    console.log("A user connected:", socket.user.fullName);
+
     const userId = socket.userId;
     userSocketMap[userId] = socket.id;
-    io.emit("getOnlineUsers", Object.keys(userSocketMap))
+
+    io.emit("getOnlineUsers", Object.keys(userSocketMap));
+
     socket.on("disconnect", () => {
-        console.log("A user disconnected", socket.user.fullName)
+        console.log("A user disconnected:", socket.user.fullName);
         delete userSocketMap[userId];
-        io.emit("getOnlineUsers", Object.keys(userSocketMap))
-    })
-})
+        io.emit("getOnlineUsers", Object.keys(userSocketMap));
+    });
+});
 
 export { io, app, server };

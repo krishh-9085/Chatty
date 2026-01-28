@@ -7,28 +7,27 @@ import { connectDB } from "./lib/db.js";
 import { ENV } from "./lib/env.js";
 import { app, server } from "./lib/socket.js";
 
-// 🔥 IMPORTANT: Use Render's injected PORT
+// 🔥 Render provides this
 const PORT = process.env.PORT;
+if (!PORT) throw new Error("PORT is not defined");
 
-if (!PORT) {
-    throw new Error("PORT is not defined");
-}
-
-// Middlewares
-app.use(express.json({ limit: "5mb" }));
+// ✅ CORS MUST BE FIRST
 app.use(
     cors({
         origin: ENV.CLIENT_URL,
         credentials: true,
     })
 );
+
+// Then other middleware
+app.use(express.json({ limit: "5mb" }));
 app.use(cookieParser());
 
 // Routes
 app.use("/api/auth", authRoutes);
 app.use("/api/messages", messageRoutes);
 
-// ✅ Connect DB first, then start server
+// Start server
 connectDB()
     .then(() => {
         server.listen(PORT, () => {
