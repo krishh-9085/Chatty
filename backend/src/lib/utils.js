@@ -11,11 +11,12 @@ export const generateToken = (userId, res) => {
     });
 
     res.cookie("jwt", token, {
-        maxAge: 7 * 24 * 60 * 60 * 1000, //ms
-        httpOnly: true, //prevent XSS attacks:scriss site scripting
-        sameSite: "strict", //CRSF attack
-        secure: ENV.NODE_ENV === "development" ? false : true,
+        maxAge: 7 * 24 * 60 * 60 * 1000,
+        httpOnly: true,
+        sameSite: "none",   // ✅ REQUIRED for cross-site
+        secure: true,       // ✅ REQUIRED when sameSite = none
     });
+
 
     return token;
 };
