@@ -1,31 +1,38 @@
 import express from "express";
 import cookieParser from "cookie-parser";
 import cors from "cors";
+
 import authRoutes from "./routes/auth.route.js";
 import messageRoutes from "./routes/message.route.js";
 import { connectDB } from "./lib/db.js";
 import { ENV } from "./lib/env.js";
 import { app, server } from "./lib/socket.js";
 
-const PORT = process.env.PORT;
-if (!PORT) throw new Error("PORT is not defined");
-
-// ✅ PRE-FLIGHT FIRST (CRITICAL)
-app.options("*", (req, res) => {
-    res.setHeader("Access-Control-Allow-Origin", ENV.CLIENT_URL);
-    res.setHeader("Access-Control-Allow-Credentials", "true");
-    res.setHeader(
+/* ----------------------------------
+   1️⃣ GLOBAL CORS HEADERS (CRITICAL)
+----------------------------------- */
+app.use((req, res, next) => {
+    res.header("Access-Control-Allow-Origin", ENV.CLIENT_URL);
+    res.header("Access-Control-Allow-Credentials", "true");
+    res.header(
         "Access-Control-Allow-Headers",
         "Content-Type, Authorization"
     );
-    res.setHeader(
+    res.header(
         "Access-Control-Allow-Methods",
         "GET,POST,PUT,DELETE,OPTIONS"
     );
-    return res.sendStatus(204);
+
+    if (req.method === "OPTIONS") {
+        return res.sendStatus(204);
+    }
+
+    next();
 });
 
-// ✅ CORS SECOND
+/* ----------------------------------
+   2️⃣ CORS MIDDLEWARE
+----------------------------------- */
 app.use(
     cors({
         origin: ENV.CLIENT_URL,
@@ -33,17 +40,26 @@ app.use(
     })
 );
 
-// Other middleware
+/* ----------------------------------
+   3️⃣ MIDDLEWARE
+----------------------------------- */
 app.use(express.json({ limit: "5mb" }));
 app.use(cookieParser());
 
-// Routes
+/* ----------------------------------
+   4️⃣ ROUTES
+----------------------------------- */
 app.use("/api/auth", authRoutes);
 app.use("/api/messages", messageRoutes);
 
-// Start server
+/* ----------------------------------
+   5️⃣ START SERVER (Render-safe)
+----------------------------------- */
+const PORT = process.env.PORT || 3000;
+
 connectDB().then(() => {
-    server.listen(PORT, () => {
-        console.log(`Server running on port ${PORT}`);
+    server.listen(PORT, "0.0.0.0", () => {
+        console.log(`🚀 Server running on port ${PORT}`);
+        console.log(`✅ Allowed client: ${ENV.CLIENT_URL}`);
     });
 });
