@@ -2,108 +2,117 @@ import { create } from "zustand";
 import { axiosInstance } from "../lib/axios";
 import toast from "react-hot-toast";
 import { io } from "socket.io-client";
-const BASE_URL = import.meta.env.MODE === "development" ? "http://localhost:3000" : "/";
+
+const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
 
 export const useAuthStore = create((set, get) => ({
     authUser: null,
     isCheckingAuth: true,
     isSigningUp: false,
-    socket:null,
+    isLoggingIn: false,
+    socket: null,
     onlineUsers: [],
 
+    // ✅ Check auth on refresh
     checkAuth: async () => {
         try {
             const res = await axiosInstance.get("/auth/check");
             set({ authUser: res.data });
-            // connectSocket may be defined in another store; guard the call
-            const g = get();
-            if (g && typeof g.connectSocket === 'function') g.connectSocket();
+            get().connectSocket();
         } catch (error) {
-            console.log("Error in authCheck:", error);
             set({ authUser: null });
         } finally {
             set({ isCheckingAuth: false });
         }
     },
+
+    // ✅ Signup
     signup: async (data) => {
         set({ isSigningUp: true });
         try {
             const res = await axiosInstance.post("/auth/signup", data);
             set({ authUser: res.data });
-
             toast.success("Account created successfully!");
-            const g2 = get();
-            if (g2 && typeof g2.connectSocket === 'function') g2.connectSocket();
+            get().connectSocket();
         } catch (error) {
-            toast.error(error.response.data.message);
+            toast.error(error.response?.data?.message || "Signup failed");
         } finally {
             set({ isSigningUp: false });
         }
     },
+
+    // ✅ Login
     login: async (data) => {
         set({ isLoggingIn: true });
         try {
             const res = await axiosInstance.post("/auth/login", data);
             set({ authUser: res.data });
-
             toast.success("Logged in successfully");
-
             get().connectSocket();
         } catch (error) {
-            toast.error(error.response.data.message);
+            toast.error(error.response?.data?.message || "Login failed");
         } finally {
             set({ isLoggingIn: false });
         }
     },
+
+    // ✅ Logout
     logout: async () => {
         try {
             await axiosInstance.post("/auth/logout");
             set({ authUser: null });
-            // Clear chat store state
-            const { setSelectedUser, clearMessages, clearChats, clearUnreadMessages } = (await import('./useChatStore')).useChatStore.getState();
-            setSelectedUser(null);
-            clearMessages();
-            clearChats();
-            clearUnreadMessages();
-            toast.success("Logged out successfully");
+
+            const chatStore = (await import("./useChatStore")).useChatStore.getState();
+            chatStore.setSelectedUser(null);
+            chatStore.clearMessages();
+            chatStore.clearChats();
+            chatStore.clearUnreadMessages();
+
             get().disconnectSocket();
+            toast.success("Logged out successfully");
         } catch (error) {
             toast.error("Error logging out");
-            console.log("Logout error:", error);
         }
     },
+
+    // ✅ Update profile
     updateProfile: async (data) => {
         try {
             const res = await axiosInstance.put("/auth/update-profile", data);
             set({ authUser: res.data });
-            // Force update local state immediately
-            const useChatStore = (await import('./useChatStore')).useChatStore;
-            useChatStore.getState().handleProfileUpdate(res.data._id, res.data.profilePic);
+
+            const chatStore = (await import("./useChatStore")).useChatStore.getState();
+            chatStore.handleProfileUpdate(res.data._id, res.data.profilePic);
+
             toast.success("Profile updated successfully");
         } catch (error) {
-            console.log("Error in update profile:", error);
-            toast.error(error.response.data.message);
+            toast.error(error.response?.data?.message || "Profile update failed");
         }
     },
-    connectSocket: () => {
-        const { authUser } = get();
-        if (!authUser || get().socket?.connected) return;
 
-        const socket = io(BASE_URL, {
-            withCredentials: true, // this ensures cookies are sent with the connection
+    // ✅ Connect Socket.IO (FIXED)
+    connectSocket: () => {
+        const { authUser, socket } = get();
+        if (!authUser || socket?.connected) return;
+
+        const newSocket = io(BACKEND_URL, {
+            withCredentials: true,
+            transports: ["websocket", "polling"],
         });
 
-        socket.connect();
+        set({ socket: newSocket });
 
-        set({ socket });
-
-        // listen for online users event
-        socket.on("getOnlineUsers", (userIds) => {
+        newSocket.on("getOnlineUsers", (userIds) => {
             set({ onlineUsers: userIds });
         });
     },
-    
-  disconnectSocket: () => {
-    if (get().socket?.connected) get().socket.disconnect();
-  },
+
+    // ✅ Disconnect socket
+    disconnectSocket: () => {
+        const socket = get().socket;
+        if (socket) {
+            socket.disconnect();
+            set({ socket: null });
+        }
+    },
 }));
