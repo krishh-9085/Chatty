@@ -1,13 +1,19 @@
 import aj from "../lib/arcjet.js";
 import { isSpoofedBot } from "@arcjet/inspect";
+import { ENV } from "../lib/env.js";
 
-// 🔥 Helper to ALWAYS set CORS headers on early responses
+// Always set strict CORS headers (NO wildcard)
 const setCorsHeaders = (res) => {
-    res.setHeader(
-        "Access-Control-Allow-Origin",
-        process.env.CLIENT_URL
-    );
+    res.setHeader("Access-Control-Allow-Origin", ENV.CLIENT_URL);
     res.setHeader("Access-Control-Allow-Credentials", "true");
+    res.setHeader(
+        "Access-Control-Allow-Headers",
+        "Content-Type, Authorization"
+    );
+    res.setHeader(
+        "Access-Control-Allow-Methods",
+        "GET,POST,PUT,DELETE,OPTIONS"
+    );
 };
 
 export const arcjetProtection = async (req, res, next) => {
@@ -18,27 +24,25 @@ export const arcjetProtection = async (req, res, next) => {
             setCorsHeaders(res);
 
             if (decision.reason.isRateLimit()) {
-                return res
-                    .status(429)
-                    .json({ message: "Rate limit exceeded. Please try again later." });
+                return res.status(429).json({
+                    message: "Rate limit exceeded. Please try again later.",
+                });
             }
 
             if (decision.reason.isBot()) {
-                return res
-                    .status(403)
-                    .json({ message: "Bot access denied." });
+                return res.status(403).json({
+                    message: "Bot access denied.",
+                });
             }
 
-            return res
-                .status(403)
-                .json({ message: "Access denied by security policy." });
+            return res.status(403).json({
+                message: "Access denied by security policy.",
+            });
         }
 
-        // Spoofed bot check
         if (decision.results.some(isSpoofedBot)) {
             setCorsHeaders(res);
             return res.status(403).json({
-                error: "Spoofed bot detected",
                 message: "Malicious bot activity detected.",
             });
         }
